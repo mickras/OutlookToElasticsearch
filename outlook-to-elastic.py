@@ -144,16 +144,20 @@ try:
         # Hent alle meldinger fra Exchange, som er nyere end klokkeslet for sidst
         # scriptet blev kørt
         for item in account.inbox.all().filter(datetime_received__gt=since).order_by('-datetime_received'):
-            # Lav et mail-objekt ud fra emailen fra outlook
+            # Lav et mail-objekt ud fra emailen fra Exchange
             mail = Email(item)
+            
+            # Print den JSON-streng vi skal indeksere i Elasticsearch
             print(json.dumps(mail.json(), indent=4))
 
             # indekser emailen i Elasticsearch
             result = send_to_elasticsearch(mail.json(), mail.message_id)
+            
+            # Print responsen vi får fra Elasticsearch
             print(json.dumps(result, indent=4))
 
         # Gem det nye klokkeslet til fil, så vi ved fra hvilket tidspunkt vi
-        # skal hente emails fra Exchange, næste gang scriptet køres
+        # skal hente emails fra Exchange fra, næste gang scriptet køres.
         f = open(timestamp_file_path, "w")
         f.write(str(current_timestamp))
         f.close()
